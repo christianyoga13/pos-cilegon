@@ -1,129 +1,232 @@
-import Navbar from "@/components/navbar";
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import ReusableTable from "@/components/card-reusable"; // Fixed import path
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import { db } from "../../firebaseConfig";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import ReusableTable from "@/components/card-reusable";
+import FacilityCard from "@/components/booking-card";
+import { useRouter } from "next/navigation"; // Changed this line
 
-  const users = [
-    { id: 1, name: "John Doe", email: "john@example.com", role: "Admin" },
-    { id: 2, name: "Jane Smith", email: "jane@example.com", role: "User" },
-  ]
+interface Booking extends Record<string, unknown> {
+  id: string;
+  sport: string;
+  court: string;
+  date: string;
+  time: string;
+  booked_by: string;
+  username: string;
+  status: string;
+}
 
-  const userColumns = [
-    { header: "Name", accessorKey: "name" as const },
-    { header: "Email", accessorKey: "email" as const },
-    {
-      header: "Role",
-      accessorKey: "role" as const,
-      cell: (user: { role: string }) => <Badge variant={user.role === "Admin" ? "default" : "secondary"}>{user.role}</Badge>,
-    },
-  ]
+const BookingTable = () => {
+  const router = useRouter(); // Added this line
+  const [selectedSport, setSelectedSport] = useState<string>("all");
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Example 2: Products table with custom rendering
-  const products = [
-    {
-      id: "p1",
-      name: "Product 1",
-      price: 99.99,
-      stock: 10,
-      status: "In Stock",
-    },
-    {
-      id: "p2",
-      name: "Product 2",
-      price: 149.99,
-      stock: 0,
-      status: "Out of Stock",
-    },
-  ]
+  const sportsList = [
+    "All",
+    "Badminton",
+    "Futsal",
+    "Basketball",
+    "Driving Range",
+  ];
 
-  const productColumns = [
-    { header: "Product", accessorKey: "name" as const },
+  const getSportDatabaseName = (displayName: string): string => {
+    // Pastikan mapping ini sesuai dengan nama koleksi di Firestore
+    const sportMapping: Record<string, string> = {
+      'Driving Range': 'driving range',
+      'Basketball': 'basketball',
+      'Futsal': 'futsal',
+      'Badminton': 'badminton',
+      'All': 'all'
+    };
+    
+    console.log('Original name:', displayName);
+    const mappedName = sportMapping[displayName] || displayName.toLowerCase();
+    console.log('Mapped to:', mappedName);
+    
+    return mappedName;
+  };
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      setIsLoading(true);
+      setError(null);
+      const bookingsData: Booking[] = [];
+
+      try {
+        const dbSelectedSport = getSportDatabaseName(selectedSport);
+        console.log('Selected sport:', selectedSport);
+      console.log('DB sport name:', dbSelectedSport);
+
+        const sportsToFetch =
+          dbSelectedSport === "all"
+            ? sportsList
+                .filter((sport) => sport !== "All")
+                .map(getSportDatabaseName)
+            : [dbSelectedSport];
+
+            console.log('Sports to fetch:', sportsToFetch);
+
+        for (const sport of sportsToFetch) {
+          console.log('Trying to fetch courts for:', sport);
+        const courtsRef = collection(db, "sports_center", sport, "courts");
+        console.log('Collection path:', `sports_center/${sport}/courts`);
+        
+        const courtsSnapshot = await getDocs(courtsRef);
+        console.log(`Found ${courtsSnapshot.docs.length} courts for ${sport}`)
+
+          for (const courtDoc of courtsSnapshot.docs) {
+            const courtName = courtDoc.id;
+            const bookingsSnapshot = await getDocs(
+              collection(
+                db,
+                "sports_center",
+                sport,
+                "courts",
+                courtName,
+                "bookings"
+              )
+            );
+
+            for (const bookingDoc of bookingsSnapshot.docs) {
+              const date = bookingDoc.id;
+              const timeSlotsData = bookingDoc.data();
+
+              for (const [timeSlot, data] of Object.entries(timeSlotsData)) {
+                if (typeof data === "object" && data.booked_by) {
+                  const userDoc = await getDoc(
+                    doc(db, "users", data.booked_by)
+                  );
+                  const userData = userDoc.data();
+                  const username = userData?.username || "Unknown User";
+
+                  bookingsData.push({
+                    id: `${courtName}-${date}-${timeSlot}`,
+                    sport: sport,
+                    court: courtName,
+                    date: date,
+                    time: timeSlot,
+                    booked_by: data.booked_by,
+                    username: username,
+                    status: data.status || "pending",
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        setBookings(bookingsData);
+      } catch (err) {
+        console.error("Error fetching bookings:", err);
+        setError("Failed to load data. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, [selectedSport]);
+
+  const handleBookClick = (facility: string) => {
+    // Simplify to just lowercase, keep spaces as-is
+    const formattedFacility = facility.toLowerCase();
+    router.push(`/Booking/${formattedFacility}`);
+  };
+
+  const facilityData = [
     {
-      header: "Price",
-      accessorKey: "price" as const,
-      cell: (product: { price: number }) => `$${product.price.toFixed(2)}`,
+      title: "Futsal",
+      dbName: "futsal", // tambahkan field untuk nama di database
+      description: "Standard size football field with artificial turf",
+      imageUrl: "/soccer field.jpg",
+      pricePerHour: 50,
+      TotalFacility: 100,
     },
     {
-      header: "Status",
-      accessorKey: "status" as const,
-      cell: (product: { stock: number, status: string }) => (
-        <Badge 
-          variant={product.stock > 0 ? "default" : "destructive"} 
-          className="whitespace-nowrap"
-        >
-          {product.status}
-        </Badge>
-      ),
+      title: "Badminton",
+      dbName: "badminton",
+      description: "Indoor tennis court with wooden flooring",
+      imageUrl: "/tennis field.jpeg",
+      pricePerHour: 40,
+      TotalFacility: 80,
     },
     {
-      header: "Actions",
-      accessorKey: "id" as const,
-      cell: (product: { id: string }) => (
-        <Button variant="outline" size="sm">
-          View Details
-        </Button>
-      ),
+      title: "Basketball",
+      dbName: "basketball",
+      description: "Indoor basketball court with wooden flooring",
+      imageUrl: "/basketball field.jpg",
+      pricePerHour: 40,
+      TotalFacility: 65,
     },
-  ]
-  const sports = [
-    { value: "badminton", label: "Badminton" },
-    { value: "tennis", label: "Tennis" },
-    { value: "soccer", label: "Soccer" },
+    {
+      title: "Driving Range",
+      dbName: "driving range",
+      description: "Outdoor driving range with multiple bays",
+      imageUrl: "/driving range.jpg",
+      pricePerHour: 40,
+      TotalFacility: 100,
+    },
   ];
 
   return (
-    <main className="w-full min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="mx-auto px-4 py-8 ">
-        <div className="mb-8 flex justify-center items-center">
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold">Booking slots</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Select defaultValue="badminton">
-                  <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="Select a sport" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sports.map((sport) => (
-                      <SelectItem key={sport.value} value={sport.value}>
-                        {sport.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <div className="rounded-md border border-input bg-background">
-                  <div className="p-4 font-medium">TIME</div>
-                  {/* Time slots content would go here */}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-grow container mx-auto p-4">
+        <h1 className="text-4xl font-bold mb-6 mt-8">Book Facilities</h1>
+        <div className="grid md:grid-cols-4 gap-4">
+          {facilityData.map((facility) => (
+            <FacilityCard
+              key={facility.dbName}
+              title={facility.title}
+              description={facility.description}
+              imageUrl={facility.imageUrl}
+              pricePerHour={facility.pricePerHour}
+              TotalFacility={facility.TotalFacility}
+              isAvailable={true}
+              onBook={() => handleBookClick(facility.title)}
+            />
+          ))}
         </div>
-
-        {/* Tables Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <ReusableTable
-            data={users}
-            columns={userColumns}
-            title="Users"
-            description="List of all system users"
-          />
-          <ReusableTable
-            data={products}
-            columns={productColumns}
-            title="Products"
-            description="Current inventory status"
-          />
+        <h1 className="text-4xl font-bold mb-6 mt-10">View Data</h1>
+        <div className="mb-6">
+          <label className="font-semibold">Select Sport: </label>
+          <select
+            value={selectedSport}
+            onChange={(e) => setSelectedSport(e.target.value)}
+            className="border p-2 ml-2"
+          >
+            {sportsList.map((sport) => (
+              <option key={sport} value={sport}>
+                {sport}
+              </option>
+            ))}
+          </select>
         </div>
+        {isLoading && <p>Loading bookings...</p>}
+        {error && <p className="text-red-500">{error}</p>}
+
+        {bookings.length > 0 && !isLoading && (
+          <ReusableTable
+            data={bookings}
+            columns={[
+              { header: "Sport", accessorKey: "sport" },
+              { header: "Court", accessorKey: "court" },
+              { header: "Date", accessorKey: "date" },
+              { header: "Time", accessorKey: "time" },
+              { header: "Booked By", accessorKey: "username" },
+              { header: "Status", accessorKey: "status" },
+            ]}
+            title="Bookings"
+            description="List of all bookings"
+          />
+        )}
+        {!isLoading && bookings.length === 0 && <p>No bookings found.</p>}
       </div>
-    </main>
+    </div>
   );
-}
+};
+
+export default BookingTable;
