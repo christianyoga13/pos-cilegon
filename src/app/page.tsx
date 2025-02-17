@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "../../firebaseConfig";
+import { db } from "@/lib/firebaseConfig";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import ReusableTable from "@/components/card-reusable";
 import FacilityCard from "@/components/booking-card";
-import { useRouter } from "next/navigation"; // Changed this line
+import { useRouter } from "next/navigation";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 interface Booking extends Record<string, unknown> {
   id: string;
@@ -18,7 +19,7 @@ interface Booking extends Record<string, unknown> {
   status: string;
 }
 
-const BookingTable = () => {
+export default function Home() {
   const router = useRouter(); // Added this line
   const [selectedSport, setSelectedSport] = useState<string>("all");
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -173,60 +174,60 @@ const BookingTable = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="flex-grow container mx-auto p-4">
-        <h1 className="text-4xl font-bold mb-6 mt-8">Book Facilities</h1>
-        <div className="grid md:grid-cols-4 gap-4">
-          {facilityData.map((facility) => (
-            <FacilityCard
-              key={facility.dbName}
-              title={facility.title}
-              description={facility.description}
-              imageUrl={facility.imageUrl}
-              pricePerHour={facility.pricePerHour}
-              TotalFacility={facility.TotalFacility}
-              isAvailable={true}
-              onBook={() => handleBookClick(facility.title)}
-            />
-          ))}
-        </div>
-        <h1 className="text-4xl font-bold mb-6 mt-10">View Data</h1>
-        <div className="mb-6">
-          <label className="font-semibold">Select Sport: </label>
-          <select
-            value={selectedSport}
-            onChange={(e) => setSelectedSport(e.target.value)}
-            className="border p-2 ml-2"
-          >
-            {sportsList.map((sport) => (
-              <option key={sport} value={sport}>
-                {sport}
-              </option>
+    <ProtectedRoute>
+      <div className="min-h-screen flex flex-col">
+        <div className="flex-grow container mx-auto p-4">
+          <h1 className="text-4xl font-bold mb-6 mt-4">Book Facilities</h1>
+          <div className="grid md:grid-cols-4 gap-4">
+            {facilityData.map((facility) => (
+              <FacilityCard
+                key={facility.dbName}
+                title={facility.title}
+                description={facility.description}
+                imageUrl={facility.imageUrl}
+                pricePerHour={facility.pricePerHour}
+                TotalFacility={facility.TotalFacility}
+                isAvailable={true}
+                onBook={() => handleBookClick(facility.title)}
+              />
             ))}
-          </select>
-        </div>
-        {isLoading && <p>Loading bookings...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+          </div>
+          <h1 className="text-4xl font-bold mb-6 mt-10">View Data</h1>
+          <div className="mb-6">
+            <label className="font-semibold">Select Sport: </label>
+            <select
+              value={selectedSport}
+              onChange={(e) => setSelectedSport(e.target.value)}
+              className="border p-2 ml-2"
+            >
+              {sportsList.map((sport) => (
+                <option key={sport} value={sport}>
+                  {sport}
+                </option>
+              ))}
+            </select>
+          </div>
+          {isLoading && <p>Loading bookings...</p>}
+          {error && <p className="text-red-500">{error}</p>}
 
-        {bookings.length > 0 && !isLoading && (
-          <ReusableTable
-            data={bookings}
-            columns={[
-              { header: "Sport", accessorKey: "sport" },
-              { header: "Court", accessorKey: "court" },
-              { header: "Date", accessorKey: "date" },
-              { header: "Time", accessorKey: "time" },
-              { header: "Booked By", accessorKey: "username" },
-              { header: "Status", accessorKey: "status" },
-            ]}
-            title="Bookings"
-            description="List of all bookings"
-          />
-        )}
-        {!isLoading && bookings.length === 0 && <p>No bookings found.</p>}
+          {bookings.length > 0 && !isLoading && (
+            <ReusableTable
+              data={bookings}
+              columns={[
+                { header: "Sport", accessorKey: "sport" },
+                { header: "Court", accessorKey: "court" },
+                { header: "Date", accessorKey: "date" },
+                { header: "Time", accessorKey: "time" },
+                { header: "Booked By", accessorKey: "username" },
+                { header: "Status", accessorKey: "status" },
+              ]}
+              title="Bookings"
+              description="List of all bookings"
+            />
+          )}
+          {!isLoading && bookings.length === 0 && <p>No bookings found.</p>}
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 };
-
-export default BookingTable;
