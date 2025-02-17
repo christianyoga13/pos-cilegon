@@ -51,7 +51,7 @@ export function AppSidebar() {
           />
         </div>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xl mb-4">Cilegon Park</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-2xl mb-4 font-bold">Cilegon Park</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

@@ -56,7 +56,7 @@ export default function ReusableTable<T extends Record<string, unknown>>({
     <Card className={className}>
       {(title || description) && (
         <CardHeader>
-          {title && <CardTitle>{title}</CardTitle>}
+          {title && <CardTitle className="text-2xl">{title}</CardTitle>}
           {description && (
             <div className="rounded-md bg-muted/50 p-4">
               <p>{description}</p>
