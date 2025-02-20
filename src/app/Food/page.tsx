@@ -1,46 +1,18 @@
 import ProtectedRoute from "@/components/ProtectedRoute"
 import { MenuItem } from "@/components/menu-card"
 import { Container } from "@/components/ui/container"
+import { db } from "@/lib/firebaseConfig"
+import { collection, getDocs } from "firebase/firestore"
 
-export default function Food() {
-  const menuItems = [
-    {
-      id: 1,
-      name: "Chicken Wings",
-      price: "150.000",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 2,
-      name: "Fish Calamari",
-      price: "240.000",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 3,
-      name: "Caesar Salad",
-      price: "180.000",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 4,
-      name: "Margherita Pizza",
-      price: "195.000",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 5,
-      name: "Classic Burger",
-      price: "220.000",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 6,
-      name: "Veggie Wrap",
-      price: "160.000",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-  ]
+export default async function Food() {
+  // Fetch data from Firestore
+  const querySnapshot = await getDocs(collection(db, "makanan"));
+  const menuItems = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    name: doc.data().nama,
+    price: doc.data().harga,
+    image: doc.data().imageUrl
+  }));
 
   return (
     <ProtectedRoute>
@@ -52,7 +24,12 @@ export default function Food() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {menuItems.map((item) => (
-              <MenuItem key={item.id} {...item} />
+              <MenuItem 
+                key={item.id} 
+                name={item.name} 
+                price={item.price} 
+                image={item.image} 
+              />
             ))}
           </div>
         </div>

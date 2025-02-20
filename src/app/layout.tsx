@@ -35,7 +35,7 @@ function RootLayout({
               {children}
             </main>
           ) : (
-            <SidebarProvider>
+            <SidebarProvider defaultOpen={false} >
               <AppSidebar />
               <main className={`${geistSans.variable} ${geistMono.variable} antialiased w-full flex flex-col`}>
                 <Navbar />

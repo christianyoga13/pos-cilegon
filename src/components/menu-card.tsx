@@ -7,8 +7,16 @@ import {
 
 interface MenuItemProps {
   name: string
-  price: string
+  price: number
   image: string
+}
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(price);
 }
 
 export function MenuItem({ name, price, image }: MenuItemProps) {
@@ -25,7 +33,7 @@ export function MenuItem({ name, price, image }: MenuItemProps) {
       <CardContent className="p-4">
         <div className="flex justify-between items-center">
           <h3 className="font-medium">{name}</h3>
-          <p className="text-primary font-semibold">Rp {price}</p>
+          <p className="text-primary font-semibold">{formatPrice(price)}</p>
         </div>
       </CardContent>
     </Card>
