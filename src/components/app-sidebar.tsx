@@ -1,4 +1,5 @@
 import { UserCog, Store, Volleyball, CookingPot } from "lucide-react"
+import Image from 'next/image';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
 import {
@@ -19,14 +20,14 @@ const items = [
     url: "/",
     icon: Volleyball,
   },
-  {
-    title: "Restaurant",
-    url: "/Food",
-    icon: CookingPot,
-  },
+  // {
+  //   title: "Restaurant",
+  //   url: "/Food",
+  //   icon: CookingPot,
+  // },
   {
     title: "Minimarket",
-    url: "/minimarket",
+    url: "/Minimarket",
     icon: Store,
   },
   {
@@ -52,7 +53,10 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Cilegon Park</SidebarGroupLabel>
+            <SidebarGroupLabel>
+            <Image src="/logo_sports.png" alt="Logo" width={40} height={40} style={{ marginRight: '8px' }} />
+            Cilegon Park
+            </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

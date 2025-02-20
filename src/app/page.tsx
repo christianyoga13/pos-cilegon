@@ -105,14 +105,11 @@ export default function Home() {
                 if (typeof data === "object" && data.booked_by) {
                   let username;
                   
-                  // Check if booked_by looks like a Firebase UUID (long string of letters and numbers)
                   if (data.booked_by.length > 20) {
-                    // It's likely a userId, fetch the username
                     const userDoc = await getDoc(doc(db, "users", data.booked_by));
                     const userData = userDoc.data();
                     username = userData?.username || "Unknown User";
                   } else {
-                    // It's a direct name, use it as is
                     username = data.booked_by;
                   }
 
@@ -145,7 +142,6 @@ export default function Home() {
   }, [selectedSport]);
 
   const handleBookClick = (facility: string) => {
-    // Simplify to just lowercase, keep spaces as-is
     const formattedFacility = facility.toLowerCase();
     router.push(`/Booking/${formattedFacility}`);
   };
@@ -153,7 +149,7 @@ export default function Home() {
   const facilityData = [
     {
       title: "Futsal",
-      dbName: "futsal", // tambahkan field untuk nama di database
+      dbName: "futsal", 
       description: "Standard size football field with artificial turf",
       imageUrl: "/soccer field.jpg",
       pricePerHour: 50,
@@ -196,12 +192,9 @@ export default function Home() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen flex flex-col">
-        <div className="flex-grow container mx-auto p-4">
+        <div className="flex-grow container mx-auto p-6">
           <div className="flex flex-row justify-between items-center">
             <h1 className="text-4xl font-bold mb-6 mt-4">Book Facilities</h1>
-            {/* <Button asChild className="bg-green-500 text-white hover:bg-green-600">
-              <Link href="/Addpage"><Plus />Add Courts</Link>
-            </Button> */}
           </div>
           <div className="grid md:grid-cols-5 gap-4">
             {facilityData.map((facility) => (

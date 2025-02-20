@@ -129,7 +129,7 @@ export default function Admin() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen flex flex-col">
-        <div className="flex-grow container mx-auto p-4">
+        <div className="flex-grow container mx-auto p-6">
           <div className="flex flex-row justify-between items-center">
             <h1 className="text-4xl font-bold mb-6 mt-4">Admin View</h1>
             <Button
