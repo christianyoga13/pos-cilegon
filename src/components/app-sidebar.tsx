@@ -1,5 +1,6 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
-
+import { UserCog, Store, Volleyball, CookingPot } from "lucide-react"
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useState, useEffect } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -9,60 +10,62 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
 } from "@/components/ui/sidebar"
 
 // Menu items.
 const items = [
   {
-    title: "Home",
+    title: "Booking Venue",
     url: "/",
-    icon: Home,
+    icon: Volleyball,
   },
   {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
+    title: "Restaurant",
+    url: "/Food",
+    icon: CookingPot,
   },
   {
     title: "Minimarket",
     url: "/minimarket",
-    icon: Calendar,
+    icon: Store,
   },
   {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
+    title: "Admin",
+    url: "/Admin",
+    icon: UserCog,
   },
 ]
 
 export function AppSidebar() {
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUserEmail(user?.email || null);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarContent>
-        <div className="relative">
-          <SidebarTrigger 
-            className="absolute right-3 top-4 hover:bg-accent z-50" 
-          />
-        </div>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-2xl mb-4 font-bold">Cilegon Park</SidebarGroupLabel>
+          <SidebarGroupLabel>Cilegon Park</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                (item.title !== "Admin" || userEmail === "admin@gmail.com") && (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <a href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
               ))}
             </SidebarMenu>
           </SidebarGroupContent>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { db } from "../../../../firebaseConfig";
+import { db } from "@/lib/firebaseConfig";
 import {
   collection,
   getDocs,
@@ -10,6 +10,7 @@ import {
   getDoc,
   setDoc,
 } from "firebase/firestore";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 interface BookingDetails {
   booked_by?: string;
@@ -257,148 +258,150 @@ const BookingPage = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold mb-6">
-        Book {capitalizeWords(facility)}
-      </h1>
+    <ProtectedRoute>
+      <div className="container mx-auto p-4">
+        <h1 className="text-4xl font-bold mb-6">
+          Book {capitalizeWords(facility)}
+        </h1>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700">
-          Select Date:
-        </label>
-        <input
-          type="date"
-          value={tempDate}
-          onChange={handleDateChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        />
-      </div>
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700">
+            Select Date:
+          </label>
+          <input
+            type="date"
+            value={tempDate}
+            onChange={handleDateChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
 
-      <div className="overflow-x-auto">
-        {isTableLoading ? (
-          <div className="text-center py-4">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            <p className="mt-2">Updating bookings...</p>
-          </div>
-        ) : (
-          <table className="min-w-full border-collapse border border-gray-300">
-            <thead>
-              <tr>
-                <th className="border border-gray-300 p-2">Court</th>
-                {TIME_SLOTS.map((slot) => (
-                  <th key={slot} className="border border-gray-300 p-2 text-sm">
-                    {slot}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {courts.map((court) => (
-                <tr key={court.id}>
-                  <td className="border border-gray-300 p-2">
-                    <div className="font-semibold text-center">{court.name}</div>
-                  </td>
-                  {TIME_SLOTS.map((slot) => {
-                    const booking = court.bookings[selectedDate]?.[slot];
-                    const isBooked = booking?.status === "booked";
-                    const slotId = `${court.id}-${slot}`;
-                    const isSelected = selectedSlot === slotId;
-                    
-                    return (
-                      <td 
-                        key={`${court.id}-${slot}`} 
-                        className="border border-gray-300 p-2 text-center"
-                        onClick={() => {
-                          if (!isBooked) {
-                            setSelectedSlot(slotId);
-                            setSelectedCourtId(court.id);
-                            setSelectedTimeSlot(slot);
-                          }
-                        }}
-                      >
-                        <div className="flex flex-col items-center gap-1">
-                          <CourtIcon 
-                            status={booking?.status}
-                            isSelected={isSelected}
-                          />
-                          {isBooked && (
-                            <div className="text-xs text-gray-500">
-                              <div>Booked</div>
-                              {booking.rating && <div>Rating: {booking.rating}/5</div>}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    );
-                  })}
+        <div className="overflow-x-auto">
+          {isTableLoading ? (
+            <div className="text-center py-4">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+              <p className="mt-2">Updating bookings...</p>
+            </div>
+          ) : (
+            <table className="min-w-full border-collapse border border-gray-300">
+              <thead>
+                <tr>
+                  <th className="border border-gray-300 p-2">Court</th>
+                  {TIME_SLOTS.map((slot) => (
+                    <th key={slot} className="border border-gray-300 p-2 text-sm">
+                      {slot}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+              </thead>
+              <tbody>
+                {courts.map((court) => (
+                  <tr key={court.id}>
+                    <td className="border border-gray-300 p-2">
+                      <div className="font-semibold text-center">{court.name}</div>
+                    </td>
+                    {TIME_SLOTS.map((slot) => {
+                      const booking = court.bookings[selectedDate]?.[slot];
+                      const isBooked = booking?.status === "booked";
+                      const slotId = `${court.id}-${slot}`;
+                      const isSelected = selectedSlot === slotId;
+                      
+                      return (
+                        <td 
+                          key={`${court.id}-${slot}`} 
+                          className="border border-gray-300 p-2 text-center"
+                          onClick={() => {
+                            if (!isBooked) {
+                              setSelectedSlot(slotId);
+                              setSelectedCourtId(court.id);
+                              setSelectedTimeSlot(slot);
+                            }
+                          }}
+                        >
+                          <div className="flex flex-col items-center gap-1">
+                            <CourtIcon 
+                              status={booking?.status}
+                              isSelected={isSelected}
+                            />
+                            {isBooked && (
+                              <div className="text-xs text-gray-500">
+                                <div>Booked</div>
+                                {booking.rating && <div>Rating: {booking.rating}/5</div>}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
 
-      {selectedSlot && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">Confirm Booking</h2>
-            <div className="space-y-4">
-              <div className="text-sm text-gray-600 mb-4">
-                <p>Court: {courts.find(c => c.id === selectedCourtId)?.name}</p>
-                <p>Time: {selectedTimeSlot}</p>
-                <p>Date: {selectedDate}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  value={bookingName}
-                  onChange={(e) => setBookingName(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Enter your name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={bookingPhone}
-                  onChange={(e) => setBookingPhone(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Enter your phone number"
-                />
-              </div>
-              {bookingError && (
-                <div className="text-red-500 text-sm">{bookingError}</div>
-              )}
-              <div className="flex space-x-3">
-                <button
-                  onClick={handleBooking}
-                  disabled={isBooking}
-                  className="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-blue-300"
-                >
-                  {isBooking ? "Booking..." : "Confirm Booking"}
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedSlot(null);
-                    setBookingError(null);
-                  }}
-                  disabled={isBooking}
-                  className="flex-1 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 disabled:bg-gray-300"
-                >
-                  Cancel
-                </button>
+        {selectedSlot && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+              <h2 className="text-xl font-bold mb-4">Confirm Booking</h2>
+              <div className="space-y-4">
+                <div className="text-sm text-gray-600 mb-4">
+                  <p>Court: {courts.find(c => c.id === selectedCourtId)?.name}</p>
+                  <p>Time: {selectedTimeSlot}</p>
+                  <p>Date: {selectedDate}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    value={bookingName}
+                    onChange={(e) => setBookingName(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Enter your name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={bookingPhone}
+                    onChange={(e) => setBookingPhone(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+                {bookingError && (
+                  <div className="text-red-500 text-sm">{bookingError}</div>
+                )}
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleBooking}
+                    disabled={isBooking}
+                    className="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-blue-300"
+                  >
+                    {isBooking ? "Booking..." : "Confirm Booking"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedSlot(null);
+                      setBookingError(null);
+                    }}
+                    disabled={isBooking}
+                    className="flex-1 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 disabled:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </ProtectedRoute>
   );
 };
 
