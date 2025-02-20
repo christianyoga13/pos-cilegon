@@ -123,7 +123,6 @@ export default function EditPage({ params }: PageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Decode and normalize the category
       const category = decodeURIComponent(resolvedParams.category)
         .toLowerCase()
         .replace(/%20/g, ' ')

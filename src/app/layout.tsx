@@ -6,7 +6,8 @@ import "./globals.css";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import Navbar from "@/components/navbar";
-import { AuthProvider } from "@/auth/AuthContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { ProfileImageProvider } from "@/context/ProfileImageContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,12 +31,13 @@ function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
+          <ProfileImageProvider>
           {isLoginPage ? (
             <main className="antialiased w-full flex flex-col">
               {children}
             </main>
           ) : (
-            <SidebarProvider defaultOpen={false} >
+            <SidebarProvider>
               <AppSidebar />
               <main className={`${geistSans.variable} ${geistMono.variable} antialiased w-full flex flex-col`}>
                 <Navbar />
@@ -43,6 +45,7 @@ function RootLayout({
               </main>
             </SidebarProvider>
           )}
+          </ProfileImageProvider>
         </AuthProvider>
       </body>
     </html>

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebaseConfig';
 import { signInWithEmailAndPassword, AuthError } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/auth/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 
 const getAuthErrorMessage = (error: AuthError) => {
   switch (error.code) {
@@ -32,7 +32,6 @@ export default function Form() {
   const router = useRouter();
   const { user, loading, error } = useAuth();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user && !loading) {
       router.replace('/');
@@ -52,7 +51,7 @@ export default function Form() {
       await signInWithEmailAndPassword(auth, email.trim(), password);
       router.replace('/BookingTable');
     } catch (error: unknown) {
-      console.error('Login error:', error); // untuk debugging
+      console.error('Login error:', error); 
       if (error && typeof error === 'object' && 'code' in error) {
         setLoginError(getAuthErrorMessage(error as AuthError));
       } else {
@@ -64,13 +63,13 @@ export default function Form() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>Loading...</p>
+        <p className='text-xl font-bold'>Loading...</p>
       </div>
     );
   }
 
   if (user) {
-    return null; // akan di-redirect oleh useEffect
+    return null; 
   }
 
   return (
