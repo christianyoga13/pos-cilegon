@@ -56,7 +56,7 @@ const TIME_SLOTS = [
 const BookingPage = () => {
   const params = useParams();
   // Decode the facility name to handle spaces correctly
-  const facility = decodeURIComponent(params.facility as string);
+  const facility = params ? decodeURIComponent(params.facility as string) : "";
   const [courts, setCourts] = useState<Court[]>([]);
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -65,7 +65,6 @@ const BookingPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [successBooking, setSuccessBooking] = useState<string | null>(null);
   const [isTableLoading, setIsTableLoading] = useState(false);
   const [bookingName, setBookingName] = useState("");
   const [bookingPhone, setBookingPhone] = useState("");
@@ -149,13 +148,12 @@ const BookingPage = () => {
     if (facility) {
       fetchCourtsAndBookings();
     }
-  }, [fetchCourtsAndBookings]);
+  }, [fetchCourtsAndBookings, facility]);
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value;
     setTempDate(newDate);
-    setSelectedDate(newDate);
-    setSuccessBooking(null); // Clear success state when date changes
+    setSelectedDate(newDate); // Clear success state when date changes
   };
 
   const handleBooking = async () => {
@@ -198,8 +196,6 @@ const BookingPage = () => {
         }
       });
 
-      setSuccessBooking(`${selectedCourtId}-${timeSlotKey}`);
-      setSelectedSlot(null);
       setSelectedCourtId("");
       setSelectedTimeSlot("");
       setBookingName("");

@@ -1,4 +1,4 @@
-import { UserCog, Store, Volleyball, CookingPot } from "lucide-react"
+import { UserCog, Store, Volleyball } from "lucide-react"
 import Image from 'next/image';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
