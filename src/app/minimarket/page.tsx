@@ -69,7 +69,7 @@ export default function MinimarketPage() {
     return await getDownloadURL(storageRef)
   }
 
-  const handleEditProduct = async (product: Product) => {
+  const handleEditProduct = async () => {
     if (!editingProduct) return
     try {
       let imageUrl = editingProduct.image
@@ -180,7 +180,7 @@ export default function MinimarketPage() {
                     <Input
                       type="number"
                       value={newProduct.price || ""}
-                      onChange={e => setNewProduct({ ...newProduct, price: e.target.value })}
+                      onChange={e => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -195,7 +195,7 @@ export default function MinimarketPage() {
                     <Input
                       type="number"
                       value={newProduct.stock || ""}
-                      onChange={e => setNewProduct({ ...newProduct, stock: e.target.value })}
+                      onChange={e => setNewProduct({ ...newProduct, stock: Number(e.target.value) })}
                     />
                   </div>
                 </div>
@@ -248,7 +248,7 @@ export default function MinimarketPage() {
                       <Input
                         type="number"
                         value={editingProduct.price}
-                        onChange={e => setEditingProduct({ ...editingProduct, price: e.target.value })}
+                        onChange={e => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
                         placeholder="Harga"
                       />
                       <Input
@@ -259,7 +259,7 @@ export default function MinimarketPage() {
                       <Input
                         type="number"
                         value={editingProduct.stock}
-                        onChange={e => setEditingProduct({ ...editingProduct, stock: e.target.value })}
+                        onChange={e => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })}
                         placeholder="Stok"
                       />
                       <div className="grid gap-2">
@@ -283,7 +283,7 @@ export default function MinimarketPage() {
                         )}
                       </div>
                       <div className="flex gap-2">
-                        <Button onClick={() => handleEditProduct(product)}>Simpan</Button>
+                        <Button onClick={() => handleEditProduct()}>Simpan</Button>
                         <Button variant="outline" onClick={() => {
                           setIsEditing(false)
                           setEditingProduct(null)

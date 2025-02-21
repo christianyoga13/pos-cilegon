@@ -47,14 +47,14 @@ interface CourtData {
   imageUrl: string; // Make sure imageUrl is not optional
 }
 
+const sportsList = ["badminton", "futsal", "basketball", "driving range", "tennis"];
+
 export default function Admin() {
   const router = useRouter();
   const [courts, setCourts] = useState<CourtData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
-  const sportsList = ["badminton", "futsal", "basketball", "driving range", "tennis"];
 
   // Add admin check
   useEffect(() => {

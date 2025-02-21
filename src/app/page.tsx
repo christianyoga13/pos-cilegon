@@ -102,15 +102,15 @@ export default function Home() {
               const timeSlotsData = bookingDoc.data();
 
               for (const [timeSlot, data] of Object.entries(timeSlotsData)) {
-                if (typeof data === "object" && data.booked_by) {
+                if (typeof data === "object" && data !== null && 'booked_by' in data) {
                   let username;
                   
-                  if (data.booked_by.length > 20) {
+                  if (data.booked_by && data.booked_by.length > 20) {
                     const userDoc = await getDoc(doc(db, "users", data.booked_by));
                     const userData = userDoc.data();
                     username = userData?.username || "Unknown User";
                   } else {
-                    username = data.booked_by;
+                    username = data.booked_by || "Unknown User";
                   }
 
                   bookingsData.push({
@@ -119,7 +119,7 @@ export default function Home() {
                     court: courtName,
                     date: date,
                     time: timeSlot,
-                    booked_by: data.booked_by,
+                    booked_by: data.booked_by || "Unknown User",
                     username: username,
                     status: data.status || "pending",
                   });
@@ -139,6 +139,7 @@ export default function Home() {
     };
 
     fetchBookings();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSport]);
 
   const handleBookClick = (facility: string) => {
